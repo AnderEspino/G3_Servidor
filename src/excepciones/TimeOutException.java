@@ -6,9 +6,13 @@
 package excepciones;
 
 /**
- *
- * @author 2dam
+ * Excepcion que captura si la conexión con la base de datos tarda más de lo habitual
+ * @author Diego
  */
-public class TimeOutException {
-    
+public class TimeOutException extends Exception {
+
+    public TimeOutException(String msg) {
+        super(msg);
+    }
+
 }
