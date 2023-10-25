@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class ServerThread extends Thread {
 
-    //Llamada de los distintos objetos 
+    //Llamada de los distintos objetos
     private ObjectInputStream ois = null;
     private ObjectOutputStream oos = null;
     private Socket sk = null;
@@ -43,6 +43,7 @@ public class ServerThread extends Thread {
      * Método run del socket, depende de lo que reciva del cliente realiza
      * diferentes operaciones, como registrar ususarios, iniciar sesiones,
      * enviar respuestas correctas y erroneas etc...
+     *
      * @author Diego
      */
     @Override
@@ -63,7 +64,7 @@ public class ServerThread extends Thread {
                 case SIGNIN_REQUEST:
                     //Llama al método de la interfaz para hacer el signIn
                     user = sign.executeSignIn(msg.getUser());
-                    //Setea el usuario al mensaje 
+                    //Setea el usuario al mensaje
                     msg.setUser(user);
                     //Comprueba si el user tiene datos
                     if (user == null) {
@@ -78,7 +79,7 @@ public class ServerThread extends Thread {
                 case SIGNUP_REQUEST:
                     //Llama al método de la interfaz para hacer el SignUp
                     user = sign.excecuteLogin(user);
-                    //Setea el usuario al mensaje 
+                    //Setea el usuario al mensaje
                     msg.setUser(user);
                     //Comprueba si el user tiene datos
                     if (user == null) {
@@ -111,7 +112,8 @@ public class ServerThread extends Thread {
                 //Cerramos los distintos imputs y outputs más el propio socket
                 oos = new ObjectOutputStream(sk.getOutputStream());
                 oos.writeObject(msg);
-                //Introducir llamada al método para quitar un cliente atendido:
+                //Llamamos a esta funcion del main para borrar el cliente una vez que cierre su conexión
+                SignerServer.borrarCliente(this);
                 ois.close();
                 oos.close();
                 sk.close();
