@@ -29,10 +29,24 @@ public class Pool {
     private String urlDB;
     private String userDB;
     private String passDB;
+    private Integer max_User;
     private static Pool pool;
     //Stack para almacenar las distintas conexiones
     private static Stack<Connection> pilaStack = new Stack<>();
     private static final Logger LOG = Logger.getLogger(Pool.class.getName());
+
+    public Pool(ResourceBundle config, String driverBD, String urlDB, String passDB) {
+        //Asignacion de los datos del archivo de configuración para realizar la conexión a la base de datos
+        this.config = ResourceBundle.getBundle("/Utilidades/config.properties");
+        this.driverBD = config.getString("DRIVER");
+        this.urlDB = config.getString("CONEXION");
+        this.userDB = config.getString("DBUSER");
+        this.passDB = config.getString("DBPASS");
+        this.max_User = Integer.parseInt(config.getString("MAX_USERS"));
+    }
+
+    public Pool() {
+    }
 
     /**
      * Método openconnection del pool, abre las conexiones con la base de datos,
@@ -44,13 +58,7 @@ public class Pool {
      * @throws excepciones.NotOperativeDataBaseException
      * @throws excepciones.ServerConnectionException
      */
-    public Connection openConnection() throws NotOperativeDataBaseException, ServerConnectionException {
-        //Asignacion de los datos del archivo de configuración para realizar la conexión a la base de datos
-        this.config = ResourceBundle.getBundle("/Utilidades/config.properties");
-        this.driverBD = config.getString("DRIVER");
-        this.urlDB = config.getString("DB");
-        this.userDB = config.getString("DBUSER");
-        this.passDB = config.getString("DBPASS");
+    public synchronized Connection createConnection() throws NotOperativeDataBaseException, ServerConnectionException {
         //Comprobamos si hace la conexión a la base de datos
         try {
             //Establece una conexión con nuestro driver de odoo, nos devuelve la conexión
@@ -78,17 +86,19 @@ public class Pool {
      * Método que nos devuelve la conexión que hemos creado
      *
      * @author Diego,Ander
-     * @return pool
+     * @return conn
      */
-    public Connection getConnection() {
+    public synchronized Connection getConnection() {
+
         Connection conn = null;
         //Comprobamos el tamaño del stack, si es mayor que 0 sustituye la última conexión y la reemplaza por la nueva
         if (pilaStack.size() > 0) {
-            pilaStack.pop();
+            conn = pilaStack.pop();
         } else {
             //Si falla nos devuelve la conexión normal
+
             try {
-                conn = openConnection();
+                conn = createConnection();
             } catch (ServerConnectionException e) {
                 Logger.getLogger(Pool.class.getName()).log(Level.SEVERE, null, e);
             } catch (NotOperativeDataBaseException e) {
@@ -99,13 +109,32 @@ public class Pool {
     }
 
     /**
-     * Devuelve la conexión y pone la última conexión al tope de la pila
+     * Cierra la conexión del pool
      *
+     * @author Adrían
      * @param con
-     * @throws TimeOutException
+     * @throws excepciones.TimeOutException
      */
-    public void returnConection(Connection con) throws TimeOutException {
-        LOG.info("Returnea la conexión");
+    public synchronized void returnConection(Connection con) throws TimeOutException {
         pilaStack.push(con);
     }
+
+    /**
+     * Método que cierra las conexiones a cada cliente asignado
+     *
+     * @author Diego,Ander
+     * @param con
+     *
+     */
+    public synchronized void closePool(Connection con) {
+
+        for (int i = 0; !pilaStack.isEmpty(); i++) {
+            try {
+                pilaStack.pop().close();
+            } catch (SQLException ex) {
+                Logger.getLogger(Pool.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
 }

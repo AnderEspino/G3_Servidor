@@ -6,6 +6,7 @@
 package modelo;
 
 import excepciones.ConnectException;
+import excepciones.IncorrectCredentialsException;
 import excepciones.UserAlreadyExistsException;
 import excepciones.UserNotFoundException;
 import java.io.IOException;
@@ -107,6 +108,8 @@ public class ServerThread extends Thread {
         } catch (UserAlreadyExistsException e) {
             msg.setMsg(MessageType.USER_ALREADY_EXISTS_RESPONSE);
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
+        } catch (IncorrectCredentialsException ex) {
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 //Cerramos los distintos imputs y outputs más el propio socket

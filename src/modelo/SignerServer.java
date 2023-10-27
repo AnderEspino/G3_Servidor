@@ -20,9 +20,9 @@ import java.util.logging.Logger;
  */
 public class SignerServer {
 
-    private static final ResourceBundle RETO1 = ResourceBundle.getBundle("damc.grupo3.reto1.model.Config");
-    private static final int MAX_USERS = Integer.parseInt(RETO1.getString("MaxUsers"));
-    private static final int PORT = Integer.parseInt(RETO1.getString("PORT"));
+    private static final ResourceBundle archivo = ResourceBundle.getBundle("/Utilidades/Config.properties");
+    private static final int MAX_USERS = Integer.parseInt(archivo.getString("MAX_USERS"));
+    private static final int PORT = Integer.parseInt(archivo.getString("PORT"));
 
     private static final Logger LOGGER = Logger.getLogger(SignerServer.class.getName());
 
