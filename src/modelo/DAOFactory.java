@@ -16,9 +16,9 @@ public class DAOFactory {
     * Método que devuelve uno de los métodos que tenemos en la implementación.
     * @return sign
     */
-    //public Sign getDao() {
-      //  Sign sign;
-      //  sign = new DAOImplementacion();
-      //  return sign;
-    //}
+    public Sign getDao() {
+        Sign sign;
+        sign = new DAOImplementacion();
+        return sign;
+    }
 }
