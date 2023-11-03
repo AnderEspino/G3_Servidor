@@ -8,7 +8,6 @@ package modelo;
 import excepciones.ConnectException;
 import excepciones.IncorrectCredentialsException;
 import excepciones.UserAlreadyExistsException;
-import excepciones.UserNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -30,7 +29,7 @@ public class ServerThread extends Thread {
     private Sign sign;
     private MessageType messT;
     private Message msg = null;
-    private User user = null;
+    private User user;
 
     //Constructor vacio
     public ServerThread() {
@@ -38,6 +37,7 @@ public class ServerThread extends Thread {
 
     public ServerThread(Socket sk) {
         this.sk = sk;
+
     }
 
     /**
@@ -50,11 +50,13 @@ public class ServerThread extends Thread {
     @Override
     public void run() {
         try {
+
             ois = new ObjectInputStream(sk.getInputStream());
+
             //LLamaos al método de la factoria por cada registro que hace el cliente
             //Métodos comentados por falta de la clase DaoFactory
-            /*DaoFactory daofact = new DaoFactory();
-            sign = daofact.getDao();*/
+            DAOFactory daofact = new DAOFactory();
+            sign = daofact.getDao();
 
             //Leemos los datos del encapsulador
             msg = (Message) ois.readObject();
@@ -64,6 +66,7 @@ public class ServerThread extends Thread {
                 //Este caso se ejecutará si el cliente hace un Sign In
                 case SIGNIN_REQUEST:
                     //Llama al método de la interfaz para hacer el signIn
+
                     user = sign.executeSignIn(msg.getUser());
                     //Setea el usuario al mensaje
                     msg.setUser(user);
@@ -79,7 +82,9 @@ public class ServerThread extends Thread {
 
                 case SIGNUP_REQUEST:
                     //Llama al método de la interfaz para hacer el SignUp
-                    user = sign.excecuteLogin(user);
+
+                    user = sign.excecuteLogin(msg.getUser());
+
                     //Setea el usuario al mensaje
                     msg.setUser(user);
                     //Comprueba si el user tiene datos
@@ -93,23 +98,21 @@ public class ServerThread extends Thread {
                     break;
             }
             //Distintos controles de errores que se pueden interceptar
-        } catch (IOException e) {
-            msg.setMsg(MessageType.ERROR_RESPONSE);
+        } catch (UserAlreadyExistsException e) {
+            msg.setMsg(MessageType.USER_ALREADY_EXISTS_RESPONSE);
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
+        } catch (IncorrectCredentialsException e) {
+            msg.setMsg(MessageType.INCORRECT_CREDENTIALS_RESPONSE);
+            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
+        } catch (ConnectException e) {
+            msg.setMsg(MessageType.CONNECTION_ERROR_RESPONSE);
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
         } catch (ClassNotFoundException e) {
             msg.setMsg(MessageType.ERROR_RESPONSE);
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ConnectException ex) {
-            msg.setMsg(MessageType.CONNECTION_ERROR_RESPONSE);
-            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UserNotFoundException e) {
-            msg.setMsg(MessageType.USER_NOT_FOUND_RESPONSE);
+        } catch (IOException e) {
+            msg.setMsg(MessageType.ERROR_RESPONSE);
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
-        } catch (UserAlreadyExistsException e) {
-            msg.setMsg(MessageType.USER_ALREADY_EXISTS_RESPONSE);
-            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
-        } catch (IncorrectCredentialsException ex) {
-            Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
                 //Cerramos los distintos imputs y outputs más el propio socket

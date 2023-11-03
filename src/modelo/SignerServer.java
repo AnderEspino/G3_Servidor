@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  */
 public class SignerServer {
 
-    private static final ResourceBundle archivo = ResourceBundle.getBundle("/Utilidades/Config.properties");
+    private static final ResourceBundle archivo = ResourceBundle.getBundle("utilidades.Config");
     private static final int MAX_USERS = Integer.parseInt(archivo.getString("MAX_USERS"));
     private static final int PORT = Integer.parseInt(archivo.getString("PORT"));
 
@@ -37,13 +37,20 @@ public class SignerServer {
      * Metodo para iniciar el servidor.
      */
     public SignerServer() {
+        this.arrancarHilo();
+    }
+
+    private void arrancarHilo() {
         try {
+            System.out.println("Escuchando por el puerto " + PORT);
             svSocket = new ServerSocket(PORT);
 
             while (serverOn) {
+
                 //Saber si se ha sobrepasado el limite de usuarios conectados a la vez
                 if (i < MAX_USERS) {
                     skCliente = svSocket.accept();
+                    System.out.println("Conexión establecida con el cliente");
 
                     //Crear hilo pasándole el Socket skCliente
                     st = new ServerThread(skCliente);
@@ -61,6 +68,7 @@ public class SignerServer {
         } catch (IOException e) {
             Logger.getLogger(SignerServer.class.getName()).log(Level.SEVERE, null, e);
         }
+
     }
 
     /**

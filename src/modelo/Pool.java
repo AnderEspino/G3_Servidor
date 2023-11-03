@@ -37,11 +37,11 @@ public class Pool {
 
     public Pool(ResourceBundle config, String driverBD, String urlDB, String passDB) {
         //Asignacion de los datos del archivo de configuración para realizar la conexión a la base de datos
-        this.config = ResourceBundle.getBundle("/Utilidades/config.properties");
+        this.config = ResourceBundle.getBundle("Utilidades.Config");
         this.driverBD = config.getString("DRIVER");
         this.urlDB = config.getString("CONEXION");
-        this.userDB = config.getString("DBUSER");
-        this.passDB = config.getString("DBPASS");
+        this.userDB = config.getString("BDUSER");
+        this.passDB = config.getString("BDPASS");
         this.max_User = Integer.parseInt(config.getString("MAX_USERS"));
     }
 
@@ -59,10 +59,16 @@ public class Pool {
      * @throws excepciones.ServerConnectionException
      */
     public synchronized Connection createConnection() throws NotOperativeDataBaseException, ServerConnectionException {
+        this.config = ResourceBundle.getBundle("Utilidades.Config");
+        this.driverBD = config.getString("DRIVER");
+        this.urlDB = config.getString("CONEXION");
+        this.userDB = config.getString("BDUSER");
+        this.passDB = config.getString("BDPASS");
+        this.max_User = Integer.parseInt(config.getString("MAX_USERS"));
         //Comprobamos si hace la conexión a la base de datos
         try {
             //Establece una conexión con nuestro driver de odoo, nos devuelve la conexión
-            Connection conn = DriverManager.getConnection(urlDB, userDB, passDB);
+            Connection conn = DriverManager.getConnection(this.urlDB, this.userDB, this.passDB);
             return conn;
         } catch (SQLException e) {
             throw new NotOperativeDataBaseException("Base de datos no operativa");
