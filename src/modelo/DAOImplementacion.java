@@ -86,8 +86,7 @@ public class DAOImplementacion implements Sign {
                 stmt.setString(8, user.getEmail());
 
                 if (stmt.executeUpdate() == 1) {
-                    int partnerId = 0;
-                    partnerId = recogerPartnerId(partnerId);
+                    int partnerId = recogerPartnerId();
 
                     stmt = con.prepareStatement(INSERTAR_USUARIO);
 
@@ -97,8 +96,7 @@ public class DAOImplementacion implements Sign {
                     stmt.setInt(4, partnerId);
 
                     if (stmt.executeUpdate() == 1) {
-                        int id_Usuario = 0;
-                        id_Usuario = recogerUsuarioId(id_Usuario);
+                        int id_Usuario = recogerUsuarioId();
 
                         stmt = con.prepareStatement(INSERTAR_USUARIO_GRUPO);
 
@@ -107,16 +105,13 @@ public class DAOImplementacion implements Sign {
                         stmt.setInt(3, id_Usuario);
                         stmt.setInt(4, id_Usuario);
 
-                        if (stmt.executeUpdate() == 1) {
+                        stmt.executeUpdate();
 
-                            stmt = con.prepareStatement(INSERTAR_USUARIO_COMPAÑIA);
+                        stmt = con.prepareStatement(INSERTAR_USUARIO_COMPAÑIA);
 
-                            stmt.setInt(1, id_Usuario);
+                        stmt.setInt(1, id_Usuario);
 
-                            stmt.executeUpdate();
-                        } else {
-                            throw new SQLException("Ha ocurrido un error en la insercion de datos.");
-                        }
+                        stmt.executeUpdate();
                     } else {
                         throw new SQLException("Ha ocurrido un error en la insercion de datos.");
                     }
@@ -237,7 +232,8 @@ public class DAOImplementacion implements Sign {
         return existe;
     }
 
-    private int recogerPartnerId(int partnerId) {
+    private int recogerPartnerId() {
+        int partnerId = 0;
         con = pool.getConnection();
         try {
             stmt = con.prepareStatement(ID_PARTNER);
@@ -264,7 +260,8 @@ public class DAOImplementacion implements Sign {
         return partnerId;
     }
 
-    private int recogerUsuarioId(int id_Usuario) {
+    private int recogerUsuarioId() {
+        int id_Usuario = 0;
         con = pool.getConnection();
         try {
             stmt = con.prepareStatement(ID_USUARIO);
