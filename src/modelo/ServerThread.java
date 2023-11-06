@@ -16,7 +16,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Esta clase es el hilo del servidor, realiza las
+ * Esta clase es el hilo del servidor, realiza las operaciones necesarias para
+ * garantizar el funcionamiento del servidor, escucha al cliente y lee sus
+ * peticiones, envia respúestas al cliente
  *
  * @author Diego
  */
@@ -30,11 +32,13 @@ public class ServerThread extends Thread {
     private MessageType messT;
     private Message msg = null;
     private User user;
+    private static final Logger LOGGER = Logger.getLogger(ServerThread.class.getName());
 
     //Constructor vacio
     public ServerThread() {
     }
 
+    //Constructor con el socket
     public ServerThread(Socket sk) {
         this.sk = sk;
 
@@ -49,6 +53,7 @@ public class ServerThread extends Thread {
      */
     @Override
     public void run() {
+
         try {
 
             ois = new ObjectInputStream(sk.getInputStream());
@@ -63,10 +68,11 @@ public class ServerThread extends Thread {
 
             //Dependiendo de que respuesta lee este hará varias cosas con una estructura switch-case
             switch (msg.getMsg()) {
+
                 //Este caso se ejecutará si el cliente hace un Sign In
                 case SIGNIN_REQUEST:
+                    LOGGER.info("Realizando Registro");
                     //Llama al método de la interfaz para hacer el signIn
-
                     user = sign.executeSignIn(msg.getUser());
                     //Setea el usuario al mensaje
                     msg.setUser(user);
@@ -79,12 +85,11 @@ public class ServerThread extends Thread {
                         msg.setMsg(MessageType.OK_RESPONSE);
                     }
                     break;
-
+                //Este caso se ejecutará si el cliente hace un Sign uP
                 case SIGNUP_REQUEST:
+                    LOGGER.info("Realizando Inicio de sesión");
                     //Llama al método de la interfaz para hacer el SignUp
-
                     user = sign.excecuteLogin(msg.getUser());
-
                     //Setea el usuario al mensaje
                     msg.setUser(user);
                     //Comprueba si el user tiene datos
@@ -115,6 +120,7 @@ public class ServerThread extends Thread {
             Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, e);
         } finally {
             try {
+                LOGGER.info("Cerrando conexiónes");
                 //Cerramos los distintos imputs y outputs más el propio socket
                 oos = new ObjectOutputStream(sk.getOutputStream());
                 oos.writeObject(msg);

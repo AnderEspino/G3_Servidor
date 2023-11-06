@@ -35,6 +35,7 @@ public class Pool {
     private static Stack<Connection> pilaStack = new Stack<>();
     private static final Logger LOG = Logger.getLogger(Pool.class.getName());
 
+    //Constructor del pool con los parámetros necesarios para realizar la conexión a la base de datos
     public Pool(ResourceBundle config, String driverBD, String urlDB, String passDB) {
         //Asignacion de los datos del archivo de configuración para realizar la conexión a la base de datos
         this.config = ResourceBundle.getBundle("Utilidades.Config");
@@ -45,6 +46,7 @@ public class Pool {
         this.max_User = Integer.parseInt(config.getString("MAX_USERS"));
     }
 
+    //Constructor vacio
     public Pool() {
     }
 
@@ -67,6 +69,7 @@ public class Pool {
         this.max_User = Integer.parseInt(config.getString("MAX_USERS"));
         //Comprobamos si hace la conexión a la base de datos
         try {
+            LOG.info("Creando conexión");
             //Establece una conexión con nuestro driver de odoo, nos devuelve la conexión
             Connection conn = DriverManager.getConnection(this.urlDB, this.userDB, this.passDB);
             return conn;
@@ -97,6 +100,7 @@ public class Pool {
     public synchronized Connection getConnection() {
 
         Connection conn = null;
+        LOG.info("Capturando conexión");
         //Comprobamos el tamaño del stack, si es mayor que 0 sustituye la última conexión y la reemplaza por la nueva
         if (pilaStack.size() > 0) {
             conn = pilaStack.pop();
@@ -122,6 +126,7 @@ public class Pool {
      * @throws excepciones.TimeOutException
      */
     public synchronized void returnConection(Connection con) throws TimeOutException {
+        LOG.info("Devolviendo conexión");
         pilaStack.push(con);
     }
 
@@ -133,7 +138,7 @@ public class Pool {
      *
      */
     public synchronized void closePool(Connection con) {
-
+        LOG.info("Cerrando conexión");
         for (int i = 0; !pilaStack.isEmpty(); i++) {
             try {
                 pilaStack.pop().close();

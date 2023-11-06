@@ -5,7 +5,9 @@
  */
 package modelo;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,11 +15,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Esta clase es el server socket.
- *
- * @author Adrian
- */
 public class SignerServer {
 
     private static final ResourceBundle archivo = ResourceBundle.getBundle("utilidades.Config");
@@ -34,45 +31,71 @@ public class SignerServer {
     private ServerThread st;
 
     /**
-     * Metodo para iniciar el servidor.
+     * Metodo para iniciar y cerrar el servidor.
      */
     public SignerServer() {
+        // Esta llamada arranca el hilo del servidor
         this.arrancarHilo();
     }
 
+    /**
+     * Metodo que arranca el hilo worker del servidor, se encarga de gestionar
+     * la capacidad máxima de usuarios permitidos en la aplicación.
+     */
     private void arrancarHilo() {
         try {
-            System.out.println("Escuchando por el puerto " + PORT);
+            LOGGER.info("Servidor en marcha");
+            // Instanciamos el serversocket
             svSocket = new ServerSocket(PORT);
 
+            // Iniciamos un hilo para escuchar la entrada del teclado y cerrar el servidor al presionar 'q'
+            Thread tecladoThread = new Thread(() -> {
+                LOGGER.info("Presiona 'q' para cerrar el servidor.");
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                try {
+                    while (true) {
+                        String input = reader.readLine();
+                        if (input != null && input.equalsIgnoreCase("q")) {
+                            System.exit(0);
+                            break;
+                        }
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "Error al leer la entrada del teclado", e);
+                }
+            });
+
+            tecladoThread.start();
+
             while (serverOn) {
-
-                //Saber si se ha sobrepasado el limite de usuarios conectados a la vez
+                LOGGER.info("Escuchando");
+                // Saber si se ha sobrepasado el límite de usuarios conectados a la vez
                 if (i < MAX_USERS) {
+                    // Acepta la petición del socket cliente
                     skCliente = svSocket.accept();
-                    System.out.println("Conexión establecida con el cliente");
-
-                    //Crear hilo pasándole el Socket skCliente
+                    // Creamos el hilo pasándole el Socket skCliente
                     st = new ServerThread(skCliente);
                     st.start();
+                    // Cada hilo que se crea se llama la función añadir cliente, que añade un contador para hacer
+                    // la gestión de clientes
                     añadirCliente(st);
                 } else {
+                    // Si ocurre una caravana de usuarios se lanzará una excepción
                     ObjectOutputStream oos = new ObjectOutputStream(skCliente.getOutputStream());
                     mensaje.setMsg(MessageType.MAX_THREAD_USER);
                     oos.writeObject(mensaje);
                 }
             }
 
-            //Cerrar servidor
+            // Cerrar servidor
             svSocket.close();
         } catch (IOException e) {
-            Logger.getLogger(SignerServer.class.getName()).log(Level.SEVERE, null, e);
+            LOGGER.log(Level.SEVERE, "Error al cerrar el servidor", e);
         }
-
     }
 
     /**
-     * Metodo para añadir una conexion
+     * Metodo para añadir una conexión.
      *
      * @param signerT
      */
@@ -81,7 +104,7 @@ public class SignerServer {
     }
 
     /**
-     * Metodo para borrar una conexion
+     * Metodo para borrar una conexión.
      *
      * @param signerT
      */
@@ -89,12 +112,7 @@ public class SignerServer {
         i--;
     }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-        // TODO code application logic here
         new SignerServer();
     }
-
 }
