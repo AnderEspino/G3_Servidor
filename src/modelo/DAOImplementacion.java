@@ -18,6 +18,7 @@ import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.activation.DataSource;
 
 /**
  * Esta clase se utiliza para gestionar la base de datos y sus casos de lógica.
@@ -51,7 +52,7 @@ public class DAOImplementacion implements Sign {
         this.config = ResourceBundle.getBundle("Utilidades.Config");
         this.url = config.getString("CONEXION");
         this.user = config.getString("BDUSER");
-        this.pswd = config.getString("BDUSER");
+        this.pswd = config.getString("BDPASS");
         this.pool = pool.getPool();
     }
 
@@ -67,6 +68,7 @@ public class DAOImplementacion implements Sign {
         LOG.info("Relaizando la transaccion de Registro");
         //Llamamos al pool para recuperar una conexión
         con = pool.getConnection();
+
         //Hacemos una comprobación para ver si el usuario ya existe en la base de datos o no
         if (usuarioYaExiste(user.getEmail())) {
             throw new UserAlreadyExistsException("El usuario ya existe.");

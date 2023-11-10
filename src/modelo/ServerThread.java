@@ -57,7 +57,6 @@ public class ServerThread extends Thread {
         try {
 
             ois = new ObjectInputStream(sk.getInputStream());
-
             //LLamaos al método de la factoria por cada registro que hace el cliente
             //Métodos comentados por falta de la clase DaoFactory
             DAOFactory daofact = new DAOFactory();
@@ -124,11 +123,11 @@ public class ServerThread extends Thread {
                 //Cerramos los distintos imputs y outputs más el propio socket
                 oos = new ObjectOutputStream(sk.getOutputStream());
                 oos.writeObject(msg);
-                //Llamamos a esta funcion del main para borrar el cliente una vez que cierre su conexión
-                SignerServer.borrarCliente(this);
                 ois.close();
                 oos.close();
                 sk.close();
+                //Llamamos a esta funcion del main para borrar el cliente una vez que cierre su conexión
+                SignerServer.borrarCliente(this);
             } catch (IOException ex) {
                 Logger.getLogger(ServerThread.class.getName()).log(Level.SEVERE, null, ex);
             }

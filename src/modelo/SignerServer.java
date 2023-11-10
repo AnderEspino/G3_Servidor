@@ -15,9 +15,15 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Esta clase es la clase principal del Servidor, arranca el servidor e inicia
+ * el hilo para realizar las peticiones del cliente
+ *
+ * @author Adrían
+ */
 public class SignerServer {
 
-    private static final ResourceBundle archivo = ResourceBundle.getBundle("utilidades.Config");
+    private static final ResourceBundle archivo = ResourceBundle.getBundle("Utilidades.Config");
     private static final int MAX_USERS = Integer.parseInt(archivo.getString("MAX_USERS"));
     private static final int PORT = Integer.parseInt(archivo.getString("PORT"));
 
@@ -25,11 +31,11 @@ public class SignerServer {
 
     private static boolean serverOn = true;
     private ServerSocket svSocket;
-    private Message mensaje = null;
+    private Message mensaje;
     private Socket skCliente;
     private static Integer i = 0;
     private ServerThread st;
-
+    private ObjectOutputStream oos = null;
     /**
      * Metodo para iniciar y cerrar el servidor.
      */
@@ -73,6 +79,8 @@ public class SignerServer {
                 if (i < MAX_USERS) {
                     // Acepta la petición del socket cliente
                     skCliente = svSocket.accept();
+                    oos = new ObjectOutputStream(skCliente.getOutputStream());
+
                     // Creamos el hilo pasándole el Socket skCliente
                     st = new ServerThread(skCliente);
                     st.start();
@@ -81,7 +89,8 @@ public class SignerServer {
                     añadirCliente(st);
                 } else {
                     // Si ocurre una caravana de usuarios se lanzará una excepción
-                    ObjectOutputStream oos = new ObjectOutputStream(skCliente.getOutputStream());
+                    
+                    mensaje = new Message();
                     mensaje.setMsg(MessageType.MAX_THREAD_USER);
                     oos.writeObject(mensaje);
                 }
