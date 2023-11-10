@@ -35,7 +35,7 @@ public class SignerServer {
     private Socket skCliente;
     private static Integer i = 0;
     private ServerThread st;
-    private ObjectOutputStream oos = null;
+
     /**
      * Metodo para iniciar y cerrar el servidor.
      */
@@ -79,7 +79,6 @@ public class SignerServer {
                 if (i < MAX_USERS) {
                     // Acepta la petición del socket cliente
                     skCliente = svSocket.accept();
-                    oos = new ObjectOutputStream(skCliente.getOutputStream());
 
                     // Creamos el hilo pasándole el Socket skCliente
                     st = new ServerThread(skCliente);
@@ -89,7 +88,7 @@ public class SignerServer {
                     añadirCliente(st);
                 } else {
                     // Si ocurre una caravana de usuarios se lanzará una excepción
-                    
+                    ObjectOutputStream oos = new ObjectOutputStream(skCliente.getOutputStream());
                     mensaje = new Message();
                     mensaje.setMsg(MessageType.MAX_THREAD_USER);
                     oos.writeObject(mensaje);
