@@ -6,9 +6,12 @@
 package excepciones;
 
 /**
- *
- * @author 2dam
+ * Excepcion que trata si la base de datos está operativa al realizar cualquier acción con el servidor
+ * @author Diego
  */
-public class NotOperativeDataBaseException {
+public class NotOperativeDataBaseException extends Exception{
     
+    public NotOperativeDataBaseException(String msg) {
+        super(msg);
+    }
 }
